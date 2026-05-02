@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'add_minigame_screen.dart';
 import '../models/minigame.dart';
 import '../models/game_player.dart';
 
@@ -38,6 +39,36 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       }
     }
     return scores;
+  }
+
+  Future<void> _openAddMinigameScreen() async {
+    final int gamesPerPlayer = widget.allMinigames.length;
+    final int totalPlayed = _playedMinigames.length;
+
+    final int callerIndex = totalPlayed ~/ gamesPerPlayer;
+    final caller = widget.players[callerIndex];
+
+    final playedByThisPlayer = _playedMinigames
+        .where((m) => m.callerId == caller.id)
+        .toList();
+
+    final Minigame? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMinigameScreen(
+          players: widget.players,
+          allMinigames: widget.allMinigames,
+          playedByThisPlayer: playedByThisPlayer,
+          caller: caller,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _playedMinigames.add(result);
+      });
+    }
   }
 
   @override
@@ -247,7 +278,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                   ),
                 )
               : const SizedBox(width: 48),
-          FilledButton(onPressed: () {}, child: const Text("NOVA IGRA")),
+          FilledButton(
+            onPressed: () => _openAddMinigameScreen(),
+            child: const Text("NOVA IGRA"),
+          ),
           _currentPage < widget.players.length - 1
               ? IconButton(
                   icon: const Icon(Icons.arrow_forward),

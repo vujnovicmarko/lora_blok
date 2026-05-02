@@ -26,7 +26,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Minigame> _availableMinigames = [
+  final List<Minigame> _allMinigames = [
     Dpp(),
     Dame(),
     Khzs(),
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Prog(),
     Slag(),
   ];
-  final List<GamePlayer> _currentPlayers = [
+  final List<GamePlayer> _players = [
     const GamePlayer(id: '1', name: 'Igrač 1'),
     const GamePlayer(id: '2', name: 'Igrač 2'),
     const GamePlayer(id: '3', name: 'Igrač 3'),
@@ -72,8 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => ScoreboardScreen(
-                players: _currentPlayers,
-                allMinigames: _availableMinigames,
+                players: _players,
+                allMinigames: _allMinigames,
               ),
             ),
           );
