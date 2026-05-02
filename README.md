@@ -1,3 +1,3 @@
-# lora_blok
+# Lora Blok
 
-A new Flutter project.
+Aplikacija za bilježenje rezultata kartaške igre lora.

@@ -1,20 +1,49 @@
 import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const LoraBlok());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class LoraBlok extends StatefulWidget {
+  const LoraBlok({super.key});
+
+  @override
+  State<LoraBlok> createState() => _LoraBlokState();
+}
+
+class _LoraBlokState extends State<LoraBlok> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _toggleTheme() {
+    setState(() {
+      if (_themeMode == ThemeMode.system) {
+        _themeMode = ThemeMode.light;
+      } else if (_themeMode == ThemeMode.light) {
+        _themeMode = ThemeMode.dark;
+      } else {
+        _themeMode = ThemeMode.system;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Lora Blok',
+      themeMode: _themeMode,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blueAccent,
+        brightness: Brightness.light,
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blueAccent,
+        brightness: Brightness.dark,
+      ),
+      home: HomeScreen(themeMode: _themeMode, onThemeToggle: _toggleTheme),
     );
   }
 }
