@@ -20,7 +20,6 @@ class ScoreboardScreen extends StatefulWidget {
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
   final List<Minigame> _playedMinigames = [];
 
   @override
@@ -45,6 +44,13 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final int gamesPerPlayer = widget.allMinigames.length;
     final int totalPlayed = _playedMinigames.length;
 
+    if (totalPlayed >= widget.players.length * gamesPerPlayer) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Sve igre su završene!")));
+      return;
+    }
+
     final int callerIndex = totalPlayed ~/ gamesPerPlayer;
     final caller = widget.players[callerIndex];
 
@@ -67,6 +73,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     if (result != null && mounted) {
       setState(() {
         _playedMinigames.add(result);
+
+        if (_currentPage != callerIndex) {
+          _pageController.animateToPage(
+            callerIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+          );
+        }
       });
     }
   }
@@ -107,6 +121,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             color: colorScheme.onSurface,
           ),
         ),
+        const SizedBox(height: 20),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -136,10 +151,13 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   Widget _buildTable(int callerIndex) {
     final colorScheme = Theme.of(context).colorScheme;
     final int gamesPerPlayer = widget.allMinigames.length;
+    final int totalColumns = widget.players.length + 1;
 
     Map<String, int> currentTotals = _getCurrentTotals(callerIndex);
     int startIndex = callerIndex * gamesPerPlayer;
     List<Minigame> pageGames = [];
+    List<TableRow> rows = [];
+
     for (
       int i = startIndex;
       i < startIndex + gamesPerPlayer && i < _playedMinigames.length;
@@ -148,14 +166,13 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       pageGames.add(_playedMinigames[i]);
     }
 
-    List<TableRow> rows = [];
-
     rows.add(
       TableRow(
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh),
         children: [
-          const _TableCellLabel(label: "IGRA", rotated: true),
+          _buildCenteredCell("IGRA", isBold: true),
           ...widget.players.map(
-            (p) => _TableCellLabel(label: p.name, rotated: true),
+            (p) => _buildCenteredCell(p.name, isBold: true),
           ),
         ],
       ),
@@ -165,27 +182,12 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       TableRow(
         decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh),
         children: [
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                "START",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
+          _buildCenteredCell("START", isBold: true),
           ...widget.players.map(
-            (p) => Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  "${currentTotals[p.id]}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ),
+            (p) => _buildCenteredCell(
+              "${currentTotals[p.id]}",
+              isBold: true,
+              color: colorScheme.primary,
             ),
           ),
         ],
@@ -195,7 +197,6 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     for (int i = 0; i < gamesPerPlayer; i++) {
       if (i < pageGames.length) {
         final game = pageGames[i];
-
         for (var p in widget.players) {
           currentTotals[p.id] =
               currentTotals[p.id]! + (game.results[p.id] ?? 0);
@@ -204,60 +205,49 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         rows.add(
           TableRow(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 20.0,
-                ),
-                child: Text(
-                  game.shortName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              _buildCenteredCell(game.shortName, isBold: true),
+              ...widget.players.map(
+                (p) => _buildCenteredCell("${currentTotals[p.id]}"),
               ),
-              ...widget.players.map((p) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      "${currentTotals[p.id]}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                );
-              }),
             ],
           ),
         );
       } else {
         rows.add(
           TableRow(
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 20.0),
-                child: Text(""),
-              ),
-              ...widget.players.map((p) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text(""),
-                  ),
-                );
-              }),
-            ],
+            children: List.generate(
+              totalColumns,
+              (_) => _buildCenteredCell(""),
+            ),
           ),
         );
       }
     }
 
     return Table(
-      columnWidths: const {0: FixedColumnWidth(80.0)},
+      defaultColumnWidth: FractionColumnWidth(1.0 / totalColumns),
       border: TableBorder.all(color: colorScheme.outline),
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: rows,
+    );
+  }
+
+  Widget _buildCenteredCell(String text, {bool isBold = false, Color? color}) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: color ?? colorScheme.onSurface,
+          ),
+        ),
+      ),
     );
   }
 
@@ -293,36 +283,6 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               : const SizedBox(width: 48),
         ],
       ),
-    );
-  }
-}
-
-class _TableCellLabel extends StatelessWidget {
-  final String label;
-  final bool rotated;
-
-  const _TableCellLabel({required this.label, this.rotated = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      height: 80,
-      alignment: Alignment.center,
-      child: rotated
-          ? RotatedBox(
-              quarterTurns: 3,
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            )
-          : Text(label, style: TextStyle(color: colorScheme.onSurface)),
     );
   }
 }

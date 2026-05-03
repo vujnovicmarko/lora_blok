@@ -7,5 +7,8 @@ abstract class Minigame {
   Minigame({this.callerId, Map<String, int>? results})
     : results = results ?? {};
 
+  List<int> get allowedScores;
+  bool validateResults(Map<String, int> currentResults);
+  String get validationErrorMessage;
   Minigame copyWith({String? callerId, Map<String, int>? results});
 }

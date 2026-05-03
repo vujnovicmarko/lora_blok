@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/minigame.dart';
 import '../models/game_player.dart';
+import '../models/slag.dart';
 
 class AddMinigameScreen extends StatefulWidget {
   final List<GamePlayer> players;
@@ -23,14 +24,28 @@ class AddMinigameScreen extends StatefulWidget {
 
 class _AddMinigameScreenState extends State<AddMinigameScreen> {
   Minigame? _selectedMinigame;
-  final Map<String, int> _tempResults = {};
 
-  @override
-  void initState() {
-    super.initState();
-    for (var p in widget.players) {
-      _tempResults[p.id] = 0;
-    }
+  final Map<String, int> _tempResults = {};
+  final Map<String, int> _tempWhistles = {};
+
+  void _onMinigameSelected(Minigame game) {
+    setState(() {
+      if (game.shortName == 'SLAG') {
+        _selectedMinigame = Slag(
+          callerId: widget.caller.id,
+          playerIds: widget.players.map((p) => p.id).toList(),
+        );
+      } else {
+        _selectedMinigame = game;
+      }
+
+      final int minVal = _selectedMinigame!.allowedScores.first;
+
+      for (var p in widget.players) {
+        _tempResults[p.id] = minVal;
+        _tempWhistles[p.id] = 0;
+      }
+    });
   }
 
   @override
@@ -38,147 +53,242 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("NOVA IGRA")),
+      appBar: AppBar(title: const Text("Nova igra")),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
-                "ODABERI IGRU:",
+                "Odaberi igru:",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
               _buildGameSelector(),
               const SizedBox(height: 30),
+
               if (_selectedMinigame != null) ...[
-                Center(
-                  child: Text(
-                    _selectedMinigame!.fullName,
+                Text(
+                  _selectedMinigame!.fullName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildPlayerNamesRow(),
+                const SizedBox(height: 10),
+                _buildScoreSelectorsRow(),
+
+                if (_selectedMinigame is Slag) ...[
+                  const SizedBox(height: 50),
+                  Text(
+                    "FUĆKANJE",
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.primary,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _buildScorePickers(),
+                  const SizedBox(height: 20),
+                  _buildPlayerNamesRow(),
+                  const SizedBox(height: 10),
+                  _buildWhistlesRow(),
+                ],
                 const SizedBox(height: 40),
-                _buildActionButtons(),
               ],
             ],
           ),
         ),
       ),
+      bottomNavigationBar: _selectedMinigame != null
+          ? _buildSaveButton()
+          : null,
+    );
+  }
+
+  Widget _buildPlayerNamesRow() {
+    return Row(
+      children: widget.players.map((player) {
+        return Expanded(
+          child: Text(
+            player.name,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildScoreSelectorsRow() {
+    return Row(
+      children: widget.players.map((player) {
+        int currentScore =
+            _tempResults[player.id] ?? _selectedMinigame!.allowedScores.first;
+        int currentIndex = _selectedMinigame!.allowedScores.indexOf(
+          currentScore,
+        );
+
+        return Expanded(
+          child: Column(
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.keyboard_arrow_up, size: 32),
+                onPressed:
+                    currentIndex < _selectedMinigame!.allowedScores.length - 1
+                    ? () {
+                        setState(() {
+                          _tempResults[player.id] = _selectedMinigame!
+                              .allowedScores[currentIndex + 1];
+                        });
+                        HapticFeedback.selectionClick();
+                      }
+                    : null,
+              ),
+              Text(
+                "$currentScore",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.keyboard_arrow_down, size: 32),
+                onPressed: currentIndex > 0
+                    ? () {
+                        setState(() {
+                          _tempResults[player.id] = _selectedMinigame!
+                              .allowedScores[currentIndex - 1];
+                        });
+                        HapticFeedback.selectionClick();
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildWhistlesRow() {
+    return Row(
+      children: widget.players.map((player) {
+        int count = _tempWhistles[player.id] ?? 0;
+        return Expanded(
+          child: Column(
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.keyboard_arrow_up, size: 32),
+                onPressed: count < 12
+                    ? () {
+                        setState(() => _tempWhistles[player.id] = count + 1);
+                        HapticFeedback.selectionClick();
+                      }
+                    : null,
+              ),
+              Text(
+                "$count",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.keyboard_arrow_down, size: 32),
+                onPressed: count > 0
+                    ? () {
+                        setState(() => _tempWhistles[player.id] = count - 1);
+                        HapticFeedback.selectionClick();
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
   Widget _buildGameSelector() {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
       children: widget.allMinigames.map((game) {
         bool isPlayed = widget.playedByThisPlayer.any(
           (p) => p.shortName == game.shortName,
         );
         bool isSelected = _selectedMinigame?.shortName == game.shortName;
-
         return ChoiceChip(
           label: Text(game.shortName),
           selected: isSelected,
-          onSelected: isPlayed
-              ? null
-              : (selected) {
-                  setState(() {
-                    _selectedMinigame = game;
-                  });
-                },
+          onSelected: isPlayed ? null : (val) => _onMinigameSelected(game),
         );
       }).toList(),
     );
   }
 
-  Widget _buildScorePickers() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: widget.players.map((player) {
-        return Column(
-          children: [
-            Text(
-              player.name,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 150,
-              width: 70,
-              decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListWheelScrollView.useDelegate(
-                itemExtent: 40,
-                physics: const FixedExtentScrollPhysics(),
-                onSelectedItemChanged: (index) {
-                  setState(() {
-                    _tempResults[player.id] =
-                        index - 8; // Offset za range -8 do 12
-                  });
-                  HapticFeedback.selectionClick();
-                },
-                childDelegate: ListWheelChildBuilderDelegate(
-                  builder: (context, index) {
-                    int val = index - 8;
-                    if (val < -8 || val > 16) return null;
-                    return Center(
-                      child: Text(
-                        "$val",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: _tempResults[player.id] == val
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
+  Widget _buildSaveButton() {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        IconButton.filledTonal(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
-          padding: const EdgeInsets.all(15),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: FilledButton(
-            onPressed: () {
-              if (_selectedMinigame != null) {
-                final minigame = _selectedMinigame!.copyWith(
-                  results: Map<String, int>.from(_tempResults),
-                  callerId: widget.caller.id,
-                );
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: FilledButton(
+          onPressed: () {
+            if (_selectedMinigame == null) return;
+            Minigame finalGame;
 
-                Navigator.pop(context, minigame);
+            if (_selectedMinigame is Slag) {
+              final slagGame = _selectedMinigame as Slag;
+              Map<String, int> calculatedResults = {};
+              for (var p in widget.players) {
+                calculatedResults[p.id] =
+                    (_tempResults[p.id] ?? 0) + (_tempWhistles[p.id] ?? 0);
               }
-            },
-            style: FilledButton.styleFrom(padding: const EdgeInsets.all(15)),
-            child: const Text("SPREMI"),
+              finalGame = Slag(
+                callerId: widget.caller.id,
+                playerIds: slagGame.playerIds,
+                basePoints: Map<String, int>.from(_tempResults),
+                whistles: Map<String, int>.from(_tempWhistles),
+                results: calculatedResults,
+              );
+            } else {
+              finalGame = _selectedMinigame!.copyWith(
+                callerId: widget.caller.id,
+                results: Map<String, int>.from(_tempResults),
+              );
+            }
+
+            if (!finalGame.validateResults(finalGame.results)) {
+              HapticFeedback.heavyImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(finalGame.validationErrorMessage),
+                  backgroundColor: colorScheme.error,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
+            Navigator.pop(context, finalGame);
+          },
+          child: const Text(
+            "SPREMI",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-      ],
+      ),
     );
   }
 }
