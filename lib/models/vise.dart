@@ -21,8 +21,7 @@ class Vise extends Minigame {
   }
 
   @override
-  String get validationErrorMessage =>
-      'Zbroj negativnih bodova mora biti točno -8!';
+  String get validationErrorMessage => 'Zbroj negativnih bodova mora biti -8.';
 
   @override
   Vise copyWith({String? callerId, Map<String, int>? results}) {

@@ -19,7 +19,7 @@ class Herc extends Minigame {
   }
 
   @override
-  String get validationErrorMessage => 'Zbroj bodova mora biti točno 8 ili -8!';
+  String get validationErrorMessage => 'Zbroj bodova mora biti 8 ili -8.';
 
   @override
   Herc copyWith({String? callerId, Map<String, int>? results}) {

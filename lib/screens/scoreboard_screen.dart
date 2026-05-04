@@ -231,29 +231,47 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       if (i < pageGames.length) {
         final game = pageGames[i];
         final globalIndex = startIndex + i;
+        final bool isLastRow = globalIndex == _playedMinigames.length - 1;
+
+        List<Widget> rowCells = [
+          _buildClickableCell(
+            game.shortName,
+            () => _editMinigame(game, globalIndex, caller),
+            isBold: true,
+          ),
+        ];
 
         for (var p in widget.players) {
-          currentTotals[p.id] =
-              currentTotals[p.id]! + (game.results[p.id] ?? 0);
+          int delta = game.results[p.id] ?? 0;
+          currentTotals[p.id] = currentTotals[p.id]! + delta;
+
+          String? deltaStr;
+          Color? deltaCol;
+
+          if (isLastRow) {
+            if (delta > 0) {
+              deltaStr = " (+$delta)";
+              deltaCol = Colors.red;
+            } else if (delta < 0) {
+              deltaStr = " ($delta)";
+              deltaCol = Colors.green;
+            } else {
+              deltaStr = " (0)";
+              deltaCol = colorScheme.onSurface;
+            }
+          }
+
+          rowCells.add(
+            _buildClickableCell(
+              "${currentTotals[p.id]}",
+              () => _editMinigame(game, globalIndex, caller),
+              deltaText: deltaStr,
+              deltaColor: deltaCol,
+            ),
+          );
         }
 
-        rows.add(
-          TableRow(
-            children: [
-              _buildClickableCell(
-                game.shortName,
-                () => _editMinigame(game, globalIndex, caller),
-                isBold: true,
-              ),
-              ...widget.players.map(
-                (p) => _buildClickableCell(
-                  "${currentTotals[p.id]}",
-                  () => _editMinigame(game, globalIndex, caller),
-                ),
-              ),
-            ],
-          ),
-        );
+        rows.add(TableRow(children: rowCells));
       } else {
         rows.add(
           TableRow(
@@ -278,27 +296,58 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     String text,
     VoidCallback onLongPress, {
     bool isBold = false,
+    String? deltaText,
+    Color? deltaColor,
   }) {
     return GestureDetector(
       onLongPress: onLongPress,
       behavior: HitTestBehavior.opaque,
-      child: _buildCenteredCell(text, isBold: isBold),
+      child: _buildCenteredCell(
+        text,
+        isBold: isBold,
+        deltaText: deltaText,
+        deltaColor: deltaColor,
+      ),
     );
   }
 
-  Widget _buildCenteredCell(String text, {bool isBold = false, Color? color}) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildCenteredCell(
+    String text, {
+    bool isBold = false,
+    Color? color,
+    String? deltaText,
+    Color? deltaColor,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final baseStyle =
+        theme.textTheme.bodyMedium?.copyWith(
+          fontSize: 14,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          color: color ?? colorScheme.onSurface,
+        ) ??
+        TextStyle(
+          fontSize: 14,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          color: color ?? colorScheme.onSurface,
+        );
 
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-        child: Text(
-          text,
+        child: RichText(
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: color ?? colorScheme.onSurface,
+          text: TextSpan(
+            style: baseStyle,
+            children: [
+              TextSpan(text: text),
+              if (deltaText != null)
+                TextSpan(
+                  text: deltaText,
+                  style: TextStyle(color: deltaColor),
+                ),
+            ],
           ),
         ),
       ),

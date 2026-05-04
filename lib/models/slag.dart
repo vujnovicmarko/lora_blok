@@ -68,7 +68,7 @@ class Slag extends Minigame {
 
   @override
   String get validationErrorMessage =>
-      "Provjerite redoslijed završetka i broj fućkanja!";
+      "Provjerite redoslijed završetka i broj fućkanja.";
 
   @override
   Slag copyWith({String? callerId, Map<String, int>? results}) {

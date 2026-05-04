@@ -19,7 +19,7 @@ class Dame extends Minigame {
   }
 
   @override
-  String get validationErrorMessage => 'Zbroj bodova mora biti točno 8!';
+  String get validationErrorMessage => 'Zbroj bodova mora biti 8.';
 
   @override
   Dame copyWith({String? callerId, Map<String, int>? results}) {

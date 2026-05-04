@@ -18,7 +18,7 @@ class Prog extends Minigame {
   }
 
   @override
-  String get validationErrorMessage => 'Barem jedna osoba mora imati 8 bodova!';
+  String get validationErrorMessage => 'Barem jedna osoba mora imati 8 bodova.';
 
   @override
   Prog copyWith({String? callerId, Map<String, int>? results}) {

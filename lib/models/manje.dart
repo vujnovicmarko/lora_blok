@@ -21,8 +21,7 @@ class Manje extends Minigame {
   }
 
   @override
-  String get validationErrorMessage =>
-      'Zbroj pozitivnih bodova mora biti točno 8!';
+  String get validationErrorMessage => 'Zbroj pozitivnih bodova mora biti 8.';
 
   @override
   Manje copyWith({String? callerId, Map<String, int>? results}) {

@@ -310,6 +310,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
 
             if (!finalGame.validateResults(finalGame.results)) {
               HapticFeedback.heavyImpact();
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(finalGame.validationErrorMessage),

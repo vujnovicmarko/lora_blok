@@ -19,7 +19,7 @@ class Khzs extends Minigame {
   }
 
   @override
-  String get validationErrorMessage => 'Zbroj bodova mora biti točno 8!';
+  String get validationErrorMessage => 'Zbroj bodova mora biti 8.';
 
   @override
   Khzs copyWith({String? callerId, Map<String, int>? results}) {
