@@ -74,16 +74,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   Future<void> _openAddMinigameScreen() async {
     final int gamesPerPlayer = widget.allMinigames.length;
-    final int totalPlayed = _playedMinigames.length;
+    final int totalRequired = widget.players.length * gamesPerPlayer;
 
-    if (totalPlayed >= widget.players.length * gamesPerPlayer) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Sve igre su završene!")));
+    if (_playedMinigames.length >= totalRequired) {
+      _showGameOverDialog();
       return;
     }
 
-    final int callerIndex = totalPlayed ~/ gamesPerPlayer;
+    final int callerIndex = _playedMinigames.length ~/ gamesPerPlayer;
     final caller = widget.players[callerIndex];
 
     final playedByThisPlayer = _playedMinigames
@@ -114,7 +112,102 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           );
         }
       });
+
+      if (_playedMinigames.length == totalRequired) {
+        _showGameOverDialog();
+      }
     }
+  }
+
+  void _showGameOverDialog() {
+    Map<String, int> finalScores = {for (var p in widget.players) p.id: 0};
+    for (var game in _playedMinigames) {
+      for (var p in widget.players) {
+        finalScores[p.id] = finalScores[p.id]! + (game.results[p.id] ?? 0);
+      }
+    }
+
+    List<GamePlayer> sortedPlayers = List.from(widget.players);
+    sortedPlayers.sort(
+      (a, b) => finalScores[a.id]!.compareTo(finalScores[b.id]!),
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+
+        return AlertDialog(
+          title: const Center(
+            child: Text(
+              "PARTIJA ZAVRŠENA!",
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Divider(),
+                const SizedBox(height: 10),
+                ...sortedPlayers.asMap().entries.map((entry) {
+                  int rank = entry.key + 1;
+                  GamePlayer p = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "$rank. ${p.name}",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: rank == 1
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        Text(
+                          "${finalScores[p.id]}",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: rank == 1
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 10),
+                const Divider(),
+              ],
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: colorScheme.primary),
+              ),
+              child: const Text("POČETNA"),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("TABLICA"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -251,10 +344,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           if (isLastRow) {
             if (delta > 0) {
               deltaStr = " (+$delta)";
-              deltaCol = Colors.red;
+              deltaCol = const Color(0xFFE46876);
             } else if (delta < 0) {
               deltaStr = " ($delta)";
-              deltaCol = Colors.green;
+              deltaCol = const Color(0xFF98BB6c);
             } else {
               deltaStr = " (0)";
               deltaCol = colorScheme.onSurface;
@@ -357,6 +450,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   Widget _buildBottomBar() {
     final colorScheme = Theme.of(context).colorScheme;
 
+    final int gamesPerPlayer = widget.allMinigames.length;
+    final int totalRequired = widget.players.length * gamesPerPlayer;
+    final bool isGameOver = _playedMinigames.length >= totalRequired;
+
     return BottomAppBar(
       color: colorScheme.surfaceContainerHigh,
       child: Row(
@@ -373,7 +470,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               : const SizedBox(width: 48),
           FilledButton(
             onPressed: () => _openAddMinigameScreen(),
-            child: const Text("NOVA IGRA"),
+            child: Text(
+              isGameOver ? "ZAVRŠI PARTIJU" : "NOVA IGRA",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           _currentPage < widget.players.length - 1
               ? IconButton(

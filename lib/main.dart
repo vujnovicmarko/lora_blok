@@ -35,12 +35,12 @@ class _LoraBlokState extends State<LoraBlok> {
       themeMode: _themeMode,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blueAccent,
+        colorSchemeSeed: const Color(0xFF98BB6c),
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blueAccent,
+        colorSchemeSeed: const Color(0xFF98BB6c),
         brightness: Brightness.dark,
       ),
       home: HomeScreen(themeMode: _themeMode, onThemeToggle: _toggleTheme),

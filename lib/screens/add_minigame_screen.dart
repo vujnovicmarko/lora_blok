@@ -82,39 +82,26 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? "Uredi igru" : "Nova igra")),
+      appBar: AppBar(title: Text(_isEditing ? 'UREDI IRGU' : 'NOVA IGRA')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "Odaberi igru:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-              _buildGameSelector(),
-              const SizedBox(height: 30),
-
-              if (_selectedMinigame != null) ...[
-                Text(
-                  _selectedMinigame!.fullName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'ODABERI IGRU:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 20),
-                _buildPlayerNamesRow(),
-                const SizedBox(height: 10),
-                _buildScoreSelectorsRow(),
+                const SizedBox(height: 15),
+                _buildGameSelector(),
+                const SizedBox(height: 30),
 
-                if (_selectedMinigame is Slag) ...[
-                  const SizedBox(height: 50),
+                if (_selectedMinigame != null) ...[
                   Text(
-                    "FUĆKANJE",
+                    _selectedMinigame!.fullName,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -124,11 +111,27 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                   const SizedBox(height: 20),
                   _buildPlayerNamesRow(),
                   const SizedBox(height: 10),
-                  _buildWhistlesRow(),
+                  _buildScoreSelectorsRow(),
+
+                  if (_selectedMinigame is Slag) ...[
+                    const SizedBox(height: 50),
+                    Text(
+                      'FUĆKANJE',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildPlayerNamesRow(),
+                    const SizedBox(height: 10),
+                    _buildWhistlesRow(),
+                  ],
+                  const SizedBox(height: 40),
                 ],
-                const SizedBox(height: 40),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -181,7 +184,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                     : null,
               ),
               Text(
-                "$currentScore",
+                '$currentScore',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -225,7 +228,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                     : null,
               ),
               Text(
-                "$count",
+                '$count',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -310,7 +313,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
 
             if (!finalGame.validateResults(finalGame.results)) {
               HapticFeedback.heavyImpact();
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(finalGame.validationErrorMessage),
@@ -323,7 +326,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
             Navigator.pop(context, finalGame);
           },
           child: Text(
-            _isEditing ? "AŽURIRAJ" : "SPREMI",
+            _isEditing ? 'AŽURIRAJ' : 'SPREMI',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
