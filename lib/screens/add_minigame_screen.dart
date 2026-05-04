@@ -9,6 +9,7 @@ class AddMinigameScreen extends StatefulWidget {
   final List<Minigame> allMinigames;
   final List<Minigame> playedByThisPlayer;
   final GamePlayer caller;
+  final Minigame? initialMinigame;
 
   const AddMinigameScreen({
     super.key,
@@ -16,6 +17,7 @@ class AddMinigameScreen extends StatefulWidget {
     required this.allMinigames,
     required this.playedByThisPlayer,
     required this.caller,
+    this.initialMinigame,
   });
 
   @override
@@ -24,11 +26,38 @@ class AddMinigameScreen extends StatefulWidget {
 
 class _AddMinigameScreenState extends State<AddMinigameScreen> {
   Minigame? _selectedMinigame;
+  bool _isEditing = false;
 
   final Map<String, int> _tempResults = {};
   final Map<String, int> _tempWhistles = {};
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialMinigame != null) {
+      _isEditing = true;
+      _loadInitialData(widget.initialMinigame!);
+    }
+  }
+
+  void _loadInitialData(Minigame game) {
+    setState(() {
+      _selectedMinigame = game;
+      for (var p in widget.players) {
+        if (game is Slag) {
+          _tempResults[p.id] = game.basePoints[p.id] ?? 0;
+          _tempWhistles[p.id] = game.whistles[p.id] ?? 0;
+        } else {
+          _tempResults[p.id] = game.results[p.id] ?? 0;
+          _tempWhistles[p.id] = 0;
+        }
+      }
+    });
+  }
+
   void _onMinigameSelected(Minigame game) {
+    if (_selectedMinigame?.shortName == game.shortName) return;
+
     setState(() {
       if (game.shortName == 'SLAG') {
         _selectedMinigame = Slag(
@@ -53,7 +82,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Nova igra")),
+      appBar: AppBar(title: Text(_isEditing ? "Uredi igru" : "Nova igra")),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -225,14 +254,23 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: widget.allMinigames.map((game) {
-        bool isPlayed = widget.playedByThisPlayer.any(
+        bool isAlreadyPlayed = widget.playedByThisPlayer.any(
           (p) => p.shortName == game.shortName,
         );
         bool isSelected = _selectedMinigame?.shortName == game.shortName;
+        bool isCurrentEditTarget =
+            widget.initialMinigame?.shortName == game.shortName;
+
+        bool isDisabled = isAlreadyPlayed && !isCurrentEditTarget;
+
         return ChoiceChip(
           label: Text(game.shortName),
           selected: isSelected,
-          onSelected: isPlayed ? null : (val) => _onMinigameSelected(game),
+          onSelected: isDisabled
+              ? null
+              : (val) {
+                  if (val) _onMinigameSelected(game);
+                },
         );
       }).toList(),
     );
@@ -283,9 +321,9 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
             }
             Navigator.pop(context, finalGame);
           },
-          child: const Text(
-            "SPREMI",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          child: Text(
+            _isEditing ? "AŽURIRAJ" : "SPREMI",
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ),

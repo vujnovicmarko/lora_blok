@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'add_minigame_screen.dart';
 import '../models/minigame.dart';
 import '../models/game_player.dart';
@@ -38,6 +39,37 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       }
     }
     return scores;
+  }
+
+  Future<void> _editMinigame(
+    Minigame game,
+    int globalIndex,
+    GamePlayer caller,
+  ) async {
+    HapticFeedback.heavyImpact();
+
+    final playedByThisPlayer = _playedMinigames
+        .where((m) => m.callerId == caller.id)
+        .toList();
+
+    final Minigame? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMinigameScreen(
+          players: widget.players,
+          allMinigames: widget.allMinigames,
+          playedByThisPlayer: playedByThisPlayer,
+          caller: caller,
+          initialMinigame: game,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _playedMinigames[globalIndex] = result;
+      });
+    }
   }
 
   Future<void> _openAddMinigameScreen() async {
@@ -152,6 +184,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final int gamesPerPlayer = widget.allMinigames.length;
     final int totalColumns = widget.players.length + 1;
+    final caller = widget.players[callerIndex];
 
     Map<String, int> currentTotals = _getCurrentTotals(callerIndex);
     int startIndex = callerIndex * gamesPerPlayer;
@@ -197,6 +230,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     for (int i = 0; i < gamesPerPlayer; i++) {
       if (i < pageGames.length) {
         final game = pageGames[i];
+        final globalIndex = startIndex + i;
+
         for (var p in widget.players) {
           currentTotals[p.id] =
               currentTotals[p.id]! + (game.results[p.id] ?? 0);
@@ -205,9 +240,16 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         rows.add(
           TableRow(
             children: [
-              _buildCenteredCell(game.shortName, isBold: true),
+              _buildClickableCell(
+                game.shortName,
+                () => _editMinigame(game, globalIndex, caller),
+                isBold: true,
+              ),
               ...widget.players.map(
-                (p) => _buildCenteredCell("${currentTotals[p.id]}"),
+                (p) => _buildClickableCell(
+                  "${currentTotals[p.id]}",
+                  () => _editMinigame(game, globalIndex, caller),
+                ),
               ),
             ],
           ),
@@ -229,6 +271,18 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       border: TableBorder.all(color: colorScheme.outline),
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: rows,
+    );
+  }
+
+  Widget _buildClickableCell(
+    String text,
+    VoidCallback onLongPress, {
+    bool isBold = false,
+  }) {
+    return GestureDetector(
+      onLongPress: onLongPress,
+      behavior: HitTestBehavior.opaque,
+      child: _buildCenteredCell(text, isBold: isBold),
     );
   }
 
