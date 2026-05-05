@@ -4,7 +4,7 @@ class Vise extends Minigame {
   Vise({super.callerId, super.results});
 
   @override
-  String get fullName => 'VIŠE';
+  String get fullName => 'Više';
 
   @override
   String get shortName => 'VIŠE';
@@ -14,7 +14,7 @@ class Vise extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values
+    final sum = currentResults.values
         .where((val) => val < 0)
         .fold(0, (sum, val) => sum + val);
     return sum == -8;

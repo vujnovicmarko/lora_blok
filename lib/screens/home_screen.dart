@@ -51,23 +51,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: colorScheme.surfaceContainerHigh,
-        title: Text('PARTIJE', style: TextStyle(color: colorScheme.onSurface)),
+        title: Text('Partije'),
         actions: [
           IconButton(
             onPressed: widget.onThemeToggle,
             icon: Icon(
-              widget.themeMode == ThemeMode.system
-                  ? Icons.computer
-                  : widget.themeMode == ThemeMode.light
+              widget.themeMode == ThemeMode.light
                   ? Icons.light_mode
                   : Icons.dark_mode,
-              color: colorScheme.onSurface,
             ),
           ),
         ],

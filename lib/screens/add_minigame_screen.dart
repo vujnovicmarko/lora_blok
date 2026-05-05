@@ -26,7 +26,7 @@ class AddMinigameScreen extends StatefulWidget {
 
 class _AddMinigameScreenState extends State<AddMinigameScreen> {
   Minigame? _selectedMinigame;
-  bool _isEditing = false;
+  var _isEditing = false;
 
   final Map<String, int> _tempResults = {};
   final Map<String, int> _tempWhistles = {};
@@ -80,9 +80,10 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'UREDI IRGU' : 'NOVA IGRA')),
+      appBar: AppBar(title: Text(_isEditing ? 'Uredi igru' : 'Nova igra')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -91,9 +92,11 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  'ODABERI IGRU:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  'Odaberi igru:',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 15),
                 _buildGameSelector(),
@@ -102,8 +105,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                 if (_selectedMinigame != null) ...[
                   Text(
                     _selectedMinigame!.fullName,
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colorScheme.primary,
                     ),
@@ -116,9 +118,8 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                   if (_selectedMinigame is Slag) ...[
                     const SizedBox(height: 50),
                     Text(
-                      'FUĆKANJE',
-                      style: TextStyle(
-                        fontSize: 20,
+                      'Fućkanje',
+                      style: textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colorScheme.primary,
                       ),
@@ -142,15 +143,17 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   }
 
   Widget _buildPlayerNamesRow() {
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: widget.players.map((player) {
         return Expanded(
           child: Text(
             player.name,
             textAlign: TextAlign.center,
-            maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            maxLines: 1,
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),
@@ -158,6 +161,8 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   }
 
   Widget _buildScoreSelectorsRow() {
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: widget.players.map((player) {
         int currentScore =
@@ -185,8 +190,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
               ),
               Text(
                 '$currentScore',
-                style: const TextStyle(
-                  fontSize: 22,
+                style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -211,6 +215,8 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   }
 
   Widget _buildWhistlesRow() {
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: widget.players.map((player) {
         int count = _tempWhistles[player.id] ?? 0;
@@ -229,8 +235,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
               ),
               Text(
                 '$count',
-                style: const TextStyle(
-                  fontSize: 22,
+                style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -280,56 +285,56 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   }
 
   Widget _buildSaveButton() {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: FilledButton(
-          onPressed: () {
-            if (_selectedMinigame == null) return;
-            Minigame finalGame;
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(200, 40)),
+            onPressed: () {
+              if (_selectedMinigame == null) return;
+              Minigame finalGame;
 
-            if (_selectedMinigame is Slag) {
-              final slagGame = _selectedMinigame as Slag;
-              Map<String, int> calculatedResults = {};
-              for (var p in widget.players) {
-                calculatedResults[p.id] =
-                    (_tempResults[p.id] ?? 0) + (_tempWhistles[p.id] ?? 0);
+              if (_selectedMinigame is Slag) {
+                final slagGame = _selectedMinigame as Slag;
+                Map<String, int> calculatedResults = {};
+                for (var p in widget.players) {
+                  calculatedResults[p.id] =
+                      (_tempResults[p.id] ?? 0) + (_tempWhistles[p.id] ?? 0);
+                }
+                finalGame = Slag(
+                  callerId: widget.caller.id,
+                  playerIds: slagGame.playerIds,
+                  basePoints: Map<String, int>.from(_tempResults),
+                  whistles: Map<String, int>.from(_tempWhistles),
+                  results: calculatedResults,
+                );
+              } else {
+                finalGame = _selectedMinigame!.copyWith(
+                  callerId: widget.caller.id,
+                  results: Map<String, int>.from(_tempResults),
+                );
               }
-              finalGame = Slag(
-                callerId: widget.caller.id,
-                playerIds: slagGame.playerIds,
-                basePoints: Map<String, int>.from(_tempResults),
-                whistles: Map<String, int>.from(_tempWhistles),
-                results: calculatedResults,
-              );
-            } else {
-              finalGame = _selectedMinigame!.copyWith(
-                callerId: widget.caller.id,
-                results: Map<String, int>.from(_tempResults),
-              );
-            }
 
-            if (!finalGame.validateResults(finalGame.results)) {
-              HapticFeedback.heavyImpact();
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(finalGame.validationErrorMessage),
-                  backgroundColor: colorScheme.error,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              return;
-            }
-            Navigator.pop(context, finalGame);
-          },
-          child: Text(
-            _isEditing ? 'AŽURIRAJ' : 'SPREMI',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              if (!finalGame.validateResults(finalGame.results)) {
+                HapticFeedback.heavyImpact();
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(finalGame.validationErrorMessage),
+                    backgroundColor: colorScheme.error,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(context, finalGame);
+            },
+            child: Text(_isEditing ? 'Ažuriraj' : 'Spremi'),
           ),
-        ),
+        ],
       ),
     );
   }

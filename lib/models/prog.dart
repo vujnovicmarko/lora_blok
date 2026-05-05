@@ -4,7 +4,7 @@ class Prog extends Minigame {
   Prog({super.callerId, super.results});
 
   @override
-  String get fullName => 'PROGNOZA';
+  String get fullName => 'Prognoza';
 
   @override
   String get shortName => 'PROG';

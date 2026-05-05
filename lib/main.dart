@@ -13,17 +13,24 @@ class LoraBlok extends StatefulWidget {
 }
 
 class _LoraBlokState extends State<LoraBlok> {
-  ThemeMode _themeMode = ThemeMode.system;
+  var _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+    _themeMode = brightness == Brightness.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
+  }
 
   void _toggleTheme() {
     setState(() {
-      if (_themeMode == ThemeMode.system) {
-        _themeMode = ThemeMode.light;
-      } else if (_themeMode == ThemeMode.light) {
-        _themeMode = ThemeMode.dark;
-      } else {
-        _themeMode = ThemeMode.system;
-      }
+      _themeMode = (_themeMode == ThemeMode.dark)
+          ? ThemeMode.light
+          : ThemeMode.dark;
     });
   }
 

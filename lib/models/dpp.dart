@@ -4,7 +4,7 @@ class Dpp extends Minigame {
   Dpp({super.callerId, super.results});
 
   @override
-  String get fullName => 'DEČKO PREKO PUTA';
+  String get fullName => 'Dečko preko puta';
 
   @override
   String get shortName => 'DPP';
@@ -14,7 +14,7 @@ class Dpp extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values.fold(0, (sum, val) => sum + val);
+    final sum = currentResults.values.fold(0, (sum, val) => sum + val);
     return sum == 8;
   }
 

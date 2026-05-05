@@ -4,7 +4,7 @@ class Manje extends Minigame {
   Manje({super.callerId, super.results});
 
   @override
-  String get fullName => 'MANJE';
+  String get fullName => 'Manje';
 
   @override
   String get shortName => 'MANJE';
@@ -14,7 +14,7 @@ class Manje extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values
+    final sum = currentResults.values
         .where((val) => val > 0)
         .fold(0, (sum, val) => sum + val);
     return sum == 8;

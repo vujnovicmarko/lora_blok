@@ -4,7 +4,7 @@ class Khzs extends Minigame {
   Khzs({super.callerId, super.results});
 
   @override
-  String get fullName => 'KRALJ HERC, ZADNJI ŠTIH';
+  String get fullName => 'Kralj herc, zadnji štih';
 
   @override
   String get shortName => 'KHZŠ';
@@ -14,7 +14,7 @@ class Khzs extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values.fold(0, (sum, val) => sum + val);
+    final sum = currentResults.values.fold(0, (sum, val) => sum + val);
     return sum == 8;
   }
 

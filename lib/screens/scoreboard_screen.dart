@@ -20,7 +20,7 @@ class ScoreboardScreen extends StatefulWidget {
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
   final PageController _pageController = PageController();
-  int _currentPage = 0;
+  var _currentPage = 0;
   final List<Minigame> _playedMinigames = [];
 
   @override
@@ -30,8 +30,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Map<String, int> _getCurrentTotals(int callerIndex) {
-    Map<String, int> scores = {for (var p in widget.players) p.id: 0};
-    int maxGamesToCount = callerIndex * widget.allMinigames.length;
+    final scores = {for (var p in widget.players) p.id: 0};
+    final maxGamesToCount = callerIndex * widget.allMinigames.length;
 
     for (int i = 0; i < maxGamesToCount && i < _playedMinigames.length; i++) {
       for (var p in widget.players) {
@@ -52,7 +52,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         .where((m) => m.callerId == caller.id)
         .toList();
 
-    final Minigame? result = await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddMinigameScreen(
@@ -73,22 +73,22 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Future<void> _openAddMinigameScreen() async {
-    final int gamesPerPlayer = widget.allMinigames.length;
-    final int totalRequired = widget.players.length * gamesPerPlayer;
+    final gamesPerPlayer = widget.allMinigames.length;
+    final totalRequired = widget.players.length * gamesPerPlayer;
 
     if (_playedMinigames.length >= totalRequired) {
       _showGameOverDialog();
       return;
     }
 
-    final int callerIndex = _playedMinigames.length ~/ gamesPerPlayer;
+    final callerIndex = _playedMinigames.length ~/ gamesPerPlayer;
     final caller = widget.players[callerIndex];
 
     final playedByThisPlayer = _playedMinigames
         .where((m) => m.callerId == caller.id)
         .toList();
 
-    final Minigame? result = await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddMinigameScreen(
@@ -120,14 +120,16 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   void _showGameOverDialog() {
-    Map<String, int> finalScores = {for (var p in widget.players) p.id: 0};
+    final textTheme = Theme.of(context).textTheme;
+
+    final finalScores = {for (var p in widget.players) p.id: 0};
     for (var game in _playedMinigames) {
       for (var p in widget.players) {
         finalScores[p.id] = finalScores[p.id]! + (game.results[p.id] ?? 0);
       }
     }
 
-    List<GamePlayer> sortedPlayers = List.from(widget.players);
+    final sortedPlayers = List.from(widget.players);
     sortedPlayers.sort(
       (a, b) => finalScores[a.id]!.compareTo(finalScores[b.id]!),
     );
@@ -141,8 +143,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         return AlertDialog(
           title: const Center(
             child: Text(
-              "PARTIJA ZAVRŠENA!",
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+              "Partija završena!",
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           content: SizedBox(
@@ -155,6 +157,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 ...sortedPlayers.asMap().entries.map((entry) {
                   int rank = entry.key + 1;
                   GamePlayer p = entry.value;
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
@@ -162,8 +165,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                       children: [
                         Text(
                           "$rank. ${p.name}",
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: textTheme.titleMedium?.copyWith(
                             fontWeight: rank == 1
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -171,12 +173,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                         ),
                         Text(
                           "${finalScores[p.id]}",
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                             color: rank == 1
                                 ? colorScheme.primary
                                 : colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -191,6 +192,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
             OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Tablica"),
+            ),
+            FilledButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
@@ -198,11 +203,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: colorScheme.primary),
               ),
-              child: const Text("POČETNA"),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("TABLICA"),
+              child: const Text("Početna"),
             ),
           ],
         );
@@ -212,10 +213,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: PageView.builder(
           controller: _pageController,
@@ -231,19 +229,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Widget _buildScoreboardPage(int callerIndex) {
-    final colorScheme = Theme.of(context).colorScheme;
     final caller = widget.players[callerIndex];
+    final textTheme = Theme.of(context).textTheme;
 
     return Column(
       children: [
         const SizedBox(height: 20),
         Text(
-          caller.name,
-          style: TextStyle(
-            fontSize: 24,
+          caller.name.toUpperCase(),
+          style: textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 20),
@@ -275,17 +271,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   Widget _buildTable(int callerIndex) {
     final colorScheme = Theme.of(context).colorScheme;
-    final int gamesPerPlayer = widget.allMinigames.length;
-    final int totalColumns = widget.players.length + 1;
+    final gamesPerPlayer = widget.allMinigames.length;
+    final totalColumns = widget.players.length + 1;
     final caller = widget.players[callerIndex];
 
-    Map<String, int> currentTotals = _getCurrentTotals(callerIndex);
-    int startIndex = callerIndex * gamesPerPlayer;
-    List<Minigame> pageGames = [];
-    List<TableRow> rows = [];
+    final currentTotals = _getCurrentTotals(callerIndex);
+    final startIndex = callerIndex * gamesPerPlayer;
+    final pageGames = [];
+    final List<TableRow> rows = [];
 
     for (
-      int i = startIndex;
+      var i = startIndex;
       i < startIndex + gamesPerPlayer && i < _playedMinigames.length;
       i++
     ) {
@@ -298,7 +294,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         children: [
           _buildCenteredCell("IGRA", isBold: true),
           ...widget.players.map(
-            (p) => _buildCenteredCell(p.name, isBold: true),
+            (p) => _buildCenteredCell(p.name.toUpperCase(), isBold: true),
           ),
         ],
       ),
@@ -320,11 +316,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       ),
     );
 
-    for (int i = 0; i < gamesPerPlayer; i++) {
+    for (var i = 0; i < gamesPerPlayer; i++) {
       if (i < pageGames.length) {
         final game = pageGames[i];
         final globalIndex = startIndex + i;
-        final bool isLastRow = globalIndex == _playedMinigames.length - 1;
+        final isLastRow = globalIndex == _playedMinigames.length - 1;
 
         List<Widget> rowCells = [
           _buildClickableCell(
@@ -335,7 +331,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         ];
 
         for (var p in widget.players) {
-          int delta = game.results[p.id] ?? 0;
+          final int delta = game.results[p.id] ?? 0;
           currentTotals[p.id] = currentTotals[p.id]! + delta;
 
           String? deltaStr;
@@ -344,10 +340,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           if (isLastRow) {
             if (delta > 0) {
               deltaStr = " (+$delta)";
-              deltaCol = const Color(0xFFE46876);
+              deltaCol = colorScheme.error;
             } else if (delta < 0) {
               deltaStr = " ($delta)";
-              deltaCol = const Color(0xFF98BB6c);
+              deltaCol = colorScheme.primary;
             } else {
               deltaStr = " (0)";
               deltaCol = colorScheme.onSurface;
@@ -411,34 +407,31 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     String? deltaText,
     Color? deltaColor,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    final baseStyle =
-        theme.textTheme.bodyMedium?.copyWith(
-          fontSize: 14,
-          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-          color: color ?? colorScheme.onSurface,
-        ) ??
-        TextStyle(
-          fontSize: 14,
-          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-          color: color ?? colorScheme.onSurface,
-        );
+    final baseStyle = textTheme.bodyLarge?.copyWith(
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+      color: color,
+    );
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-        child: RichText(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+        child: Text.rich(
           textAlign: TextAlign.center,
-          text: TextSpan(
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+          TextSpan(
             style: baseStyle,
             children: [
               TextSpan(text: text),
               if (deltaText != null)
-                TextSpan(
-                  text: deltaText,
-                  style: TextStyle(color: deltaColor),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Text(
+                    deltaText,
+                    style: textTheme.bodySmall?.copyWith(color: deltaColor),
+                  ),
                 ),
             ],
           ),
@@ -448,14 +441,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Widget _buildBottomBar() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final int gamesPerPlayer = widget.allMinigames.length;
-    final int totalRequired = widget.players.length * gamesPerPlayer;
-    final bool isGameOver = _playedMinigames.length >= totalRequired;
+    final gamesPerPlayer = widget.allMinigames.length;
+    final totalRequired = widget.players.length * gamesPerPlayer;
+    final isGameOver = _playedMinigames.length >= totalRequired;
 
     return BottomAppBar(
-      color: colorScheme.surfaceContainerHigh,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -470,10 +460,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               : const SizedBox(width: 48),
           FilledButton(
             onPressed: () => _openAddMinigameScreen(),
-            child: Text(
-              isGameOver ? "ZAVRŠI PARTIJU" : "NOVA IGRA",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            style: FilledButton.styleFrom(minimumSize: const Size(200, 40)),
+            child: Text(isGameOver ? "Završi partiju" : "Nova igra"),
           ),
           _currentPage < widget.players.length - 1
               ? IconButton(

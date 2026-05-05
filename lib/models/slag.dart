@@ -14,7 +14,7 @@ class Slag extends Minigame {
   });
 
   @override
-  String get fullName => 'SLAGANJE';
+  String get fullName => 'Slaganje';
 
   @override
   String get shortName => 'SLAG';
@@ -23,8 +23,8 @@ class Slag extends Minigame {
   List<int> get allowedScores => [-8, -4, 4, 8];
 
   int _getPriority(String playerId) {
-    int callerIndex = playerIds.indexOf(callerId!);
-    int playerIndex = playerIds.indexOf(playerId);
+    final callerIndex = playerIds.indexOf(callerId!);
+    final playerIndex = playerIds.indexOf(playerId);
     return (playerIndex - callerIndex) % playerIds.length;
   }
 
@@ -44,18 +44,18 @@ class Slag extends Minigame {
       for (var b in basePoints.entries) {
         if (a.key == b.key) continue;
 
-        int scoreA = a.value;
-        int scoreB = b.value;
-        int wA = whistles[a.key] ?? 0;
-        int wB = whistles[b.key] ?? 0;
+        final scoreA = a.value;
+        final scoreB = b.value;
+        final wA = whistles[a.key] ?? 0;
+        final wB = whistles[b.key] ?? 0;
 
         if (scoreA < scoreB && wA > wB) {
           return false;
         }
 
         if (wA == wB) {
-          int priorityA = _getPriority(a.key);
-          int priorityB = _getPriority(b.key);
+          final priorityA = _getPriority(a.key);
+          final priorityB = _getPriority(b.key);
 
           if (priorityA < priorityB && scoreA > scoreB) {
             return false;

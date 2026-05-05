@@ -4,7 +4,7 @@ class Dame extends Minigame {
   Dame({super.callerId, super.results});
 
   @override
-  String get fullName => 'DAME';
+  String get fullName => 'Dame';
 
   @override
   String get shortName => 'DAME';
@@ -14,7 +14,7 @@ class Dame extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values.fold(0, (sum, val) => sum + val);
+    final sum = currentResults.values.fold(0, (sum, val) => sum + val);
     return sum == 8;
   }
 

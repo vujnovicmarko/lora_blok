@@ -4,7 +4,7 @@ class Herc extends Minigame {
   Herc({super.callerId, super.results});
 
   @override
-  String get fullName => 'HERČEVI';
+  String get fullName => 'Herčevi';
 
   @override
   String get shortName => 'HERC';
@@ -14,12 +14,21 @@ class Herc extends Minigame {
 
   @override
   bool validateResults(Map<String, int> currentResults) {
-    int sum = currentResults.values.fold(0, (sum, val) => sum + val);
-    return sum == 8 || sum == -8;
+    final values = currentResults.values;
+    final sum = values.fold(0, (sum, val) => sum + val);
+
+    final standardMatch = sum == 8 && values.every((v) => v >= 0);
+    final sweepMatch =
+        sum == -8 &&
+        values.contains(-8) &&
+        values.where((v) => v == 0).length == (values.length - 1);
+
+    return standardMatch || sweepMatch;
   }
 
   @override
-  String get validationErrorMessage => 'Zbroj bodova mora biti 8 ili -8.';
+  String get validationErrorMessage =>
+      'Zbroj mora biti 8 ili jedan igrač ima -8 i ostali 0.';
 
   @override
   Herc copyWith({String? callerId, Map<String, int>? results}) {
