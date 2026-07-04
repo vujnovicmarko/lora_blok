@@ -40,12 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _allMinigames = [
       Dpp(),
       Dame(),
-      Khzs(),
-      Herc(),
-      Manje(),
-      Vise(),
-      Prog(),
-      Slag(playerIds: _players.map((p) => p.id).toList()),
+      // Khzs(),
+      // Herc(),
+      // Manje(),
+      // Vise(),
+      // Prog(),
+      // Slag(playerIds: _players.map((p) => p.id).toList()),
     ];
   }
 

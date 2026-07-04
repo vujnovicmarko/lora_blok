@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import '../models/minigame.dart';
 import '../models/game_player.dart';
 import '../models/slag.dart';
+import '../utils/app_sizes.dart';
+import '../widgets/player_names_row.dart';
+import '../widgets/score_selector_row.dart';
+import '../widgets/game_selector.dart';
 
 class AddMinigameScreen extends StatefulWidget {
   final List<GamePlayer> players;
@@ -86,7 +90,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
       appBar: AppBar(title: Text(_isEditing ? 'Uredi igru' : 'Nova igra')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: AppSizes.p24),
           child: SizedBox(
             width: double.infinity,
             child: Column(
@@ -98,9 +102,15 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 15),
-                _buildGameSelector(),
-                const SizedBox(height: 30),
+                const SizedBox(height: AppSizes.p16),
+                GameSelector(
+                  allMinigames: widget.allMinigames,
+                  playedByThisPlayer: widget.playedByThisPlayer,
+                  selectedMinigame: _selectedMinigame,
+                  initialMinigame: widget.initialMinigame,
+                  onSelected: _onMinigameSelected,
+                ),
+                const SizedBox(height: AppSizes.p32),
 
                 if (_selectedMinigame != null) ...[
                   Text(
@@ -110,13 +120,22 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                       color: colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildPlayerNamesRow(),
-                  const SizedBox(height: 10),
-                  _buildScoreSelectorsRow(),
+                  const SizedBox(height: AppSizes.p16),
+                  PlayerNamesRow(players: widget.players),
+                  const SizedBox(height: AppSizes.p8),
+                  ScoreSelectorRow(
+                    players: widget.players,
+                    values: _tempResults,
+                    allowedScores: _selectedMinigame!.allowedScores,
+                    onChanged: (playerId, newValue) {
+                      setState(() {
+                        _tempResults[playerId] = newValue;
+                      });
+                    },
+                  ),
 
                   if (_selectedMinigame is Slag) ...[
-                    const SizedBox(height: 50),
+                    const SizedBox(height: AppSizes.p32),
                     Text(
                       'Fućkanje',
                       style: textTheme.titleLarge?.copyWith(
@@ -124,12 +143,21 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                         color: colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildPlayerNamesRow(),
-                    const SizedBox(height: 10),
-                    _buildWhistlesRow(),
+                    const SizedBox(height: AppSizes.p16),
+                    PlayerNamesRow(players: widget.players),
+                    const SizedBox(height: AppSizes.p8),
+                    ScoreSelectorRow(
+                      players: widget.players,
+                      values: _tempWhistles,
+                      allowedScores: null, // null indicates 0-12 range for whistles
+                      onChanged: (playerId, newValue) {
+                        setState(() {
+                          _tempWhistles[playerId] = newValue;
+                        });
+                      },
+                    ),
                   ],
-                  const SizedBox(height: 40),
+                  const SizedBox(height: AppSizes.p32),
                 ],
               ],
             ),
@@ -137,156 +165,12 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
         ),
       ),
       bottomNavigationBar: _selectedMinigame != null
-          ? _buildSaveButton()
+          ? _buildSaveButton(colorScheme)
           : null,
     );
   }
 
-  Widget _buildPlayerNamesRow() {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: widget.players.map((player) {
-        return Expanded(
-          child: Text(
-            player.name,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildScoreSelectorsRow() {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: widget.players.map((player) {
-        int currentScore =
-            _tempResults[player.id] ?? _selectedMinigame!.allowedScores.first;
-        int currentIndex = _selectedMinigame!.allowedScores.indexOf(
-          currentScore,
-        );
-
-        return Expanded(
-          child: Column(
-            children: [
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.keyboard_arrow_up, size: 32),
-                onPressed:
-                    currentIndex < _selectedMinigame!.allowedScores.length - 1
-                    ? () {
-                        setState(() {
-                          _tempResults[player.id] = _selectedMinigame!
-                              .allowedScores[currentIndex + 1];
-                        });
-                        HapticFeedback.selectionClick();
-                      }
-                    : null,
-              ),
-              Text(
-                '$currentScore',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.keyboard_arrow_down, size: 32),
-                onPressed: currentIndex > 0
-                    ? () {
-                        setState(() {
-                          _tempResults[player.id] = _selectedMinigame!
-                              .allowedScores[currentIndex - 1];
-                        });
-                        HapticFeedback.selectionClick();
-                      }
-                    : null,
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildWhistlesRow() {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: widget.players.map((player) {
-        int count = _tempWhistles[player.id] ?? 0;
-        return Expanded(
-          child: Column(
-            children: [
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.keyboard_arrow_up, size: 32),
-                onPressed: count < 12
-                    ? () {
-                        setState(() => _tempWhistles[player.id] = count + 1);
-                        HapticFeedback.selectionClick();
-                      }
-                    : null,
-              ),
-              Text(
-                '$count',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.keyboard_arrow_down, size: 32),
-                onPressed: count > 0
-                    ? () {
-                        setState(() => _tempWhistles[player.id] = count - 1);
-                        HapticFeedback.selectionClick();
-                      }
-                    : null,
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildGameSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children: widget.allMinigames.map((game) {
-        bool isAlreadyPlayed = widget.playedByThisPlayer.any(
-          (p) => p.shortName == game.shortName,
-        );
-        bool isSelected = _selectedMinigame?.shortName == game.shortName;
-        bool isCurrentEditTarget =
-            widget.initialMinigame?.shortName == game.shortName;
-
-        bool isDisabled = isAlreadyPlayed && !isCurrentEditTarget;
-
-        return ChoiceChip(
-          label: Text(game.shortName),
-          selected: isSelected,
-          onSelected: isDisabled
-              ? null
-              : (val) {
-                  if (val) _onMinigameSelected(game);
-                },
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    final colorScheme = Theme.of(context).colorScheme;
-
+  Widget _buildSaveButton(ColorScheme colorScheme) {
     return BottomAppBar(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

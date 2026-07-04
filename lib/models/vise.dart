@@ -10,7 +10,7 @@ class Vise extends Minigame {
   String get shortName => 'VIŠE';
 
   @override
-  List<int> get allowedScores => [-8, -7, -6, -5, -4, -3, -2, -1, 8];
+  List<int> get allowedScores => [8, -1, -2, -3, -4, -5, -6, -7, -8];
 
   @override
   bool validateResults(Map<String, int> currentResults) {
