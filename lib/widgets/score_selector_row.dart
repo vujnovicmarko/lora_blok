@@ -4,9 +4,9 @@ import '../models/game_player.dart';
 
 class ScoreSelectorRow extends StatelessWidget {
   final List<GamePlayer> players;
-  final Map<String, int> values;
+  final Map<int, int> values;
   final List<int>? allowedScores;
-  final Function(String playerId, int newValue) onChanged;
+  final Function(int playerId, int newValue) onChanged;
 
   const ScoreSelectorRow({
     super.key,

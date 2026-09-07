@@ -1,9 +1,9 @@
 import 'package:lora_blok/models/minigame.dart';
 
 class Slag extends Minigame {
-  final List<String> playerIds;
-  final Map<String, int> basePoints;
-  final Map<String, int> whistles;
+  final List<int> playerIds;
+  final Map<int, int> basePoints;
+  final Map<int, int> whistles;
 
   Slag({
     super.callerId,
@@ -22,14 +22,14 @@ class Slag extends Minigame {
   @override
   List<int> get allowedScores => [-8, -4, 4, 8];
 
-  int _getPriority(String playerId) {
+  int _getPriority(int playerId) {
     final callerIndex = playerIds.indexOf(callerId!);
     final playerIndex = playerIds.indexOf(playerId);
     return (playerIndex - callerIndex) % playerIds.length;
   }
 
   @override
-  bool validateResults(Map<String, int> currentResults) {
+  bool validateResults(Map<int, int> currentResults) {
     final positions = basePoints.values.toList();
 
     if (positions.length != 4 ||
@@ -71,13 +71,33 @@ class Slag extends Minigame {
       "Provjerite redoslijed završetka i broj fućkanja.";
 
   @override
-  Slag copyWith({String? callerId, Map<String, int>? results}) {
+  Slag copyWith({int? callerId, Map<int, int>? results}) {
     return Slag(
       callerId: callerId ?? this.callerId,
       results: results ?? Map.from(this.results),
       playerIds: playerIds,
       basePoints: Map.from(basePoints),
       whistles: Map.from(whistles),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': shortName,
+    'callerId': callerId,
+    'results': results.map((k, v) => MapEntry(k.toString(), v)),
+    'playerIds': playerIds,
+    'basePoints': basePoints.map((k, v) => MapEntry(k.toString(), v)),
+    'whistles': whistles.map((k, v) => MapEntry(k.toString(), v)),
+  };
+
+  factory Slag.fromJson(Map<String, dynamic> json) {
+    return Slag(
+      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
+      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      playerIds: (json['playerIds'] as List<dynamic>? ?? []).map((e) => int.parse(e.toString())).toList(),
+      basePoints: (json['basePoints'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      whistles: (json['whistles'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
     );
   }
 }

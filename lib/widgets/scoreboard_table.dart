@@ -8,7 +8,8 @@ class ScoreboardTable extends StatelessWidget {
   final List<GamePlayer> players;
   final List<Minigame> allMinigames;
   final List<Minigame> playedMinigames;
-  final Map<String, int> currentTotals;
+  final Map<int, int> currentTotals;
+  final bool isReadOnly;
   final Function(Minigame, int, GamePlayer) onEditMinigame;
 
   const ScoreboardTable({
@@ -18,6 +19,7 @@ class ScoreboardTable extends StatelessWidget {
     required this.allMinigames,
     required this.playedMinigames,
     required this.currentTotals,
+    this.isReadOnly = false,
     required this.onEditMinigame,
   });
 
@@ -40,7 +42,7 @@ class ScoreboardTable extends StatelessWidget {
       TableRow(
         decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh),
         children: [
-          const ScoreboardCell(text: "IGRA", isBold: true),
+          const ScoreboardCell(text: "", isBold: true),
           ...players.map((p) => ScoreboardCell(text: p.name.toUpperCase(), isBold: true)),
         ],
       ),
@@ -56,11 +58,13 @@ class ScoreboardTable extends StatelessWidget {
       ),
     );
 
+    final runningTotals = Map<int, int>.from(currentTotals);
+
     for (var i = 0; i < gamesPerPlayer; i++) {
       if (i < pageGames.length) {
         final game = pageGames[i];
         final globalIndex = startIndex + i;
-        final isLastRow = globalIndex == playedMinigames.length - 1;
+        final showDelta = !isReadOnly && (globalIndex == playedMinigames.length - 1);
 
         List<Widget> rowCells = [
           ScoreboardCell(
@@ -72,12 +76,12 @@ class ScoreboardTable extends StatelessWidget {
 
         for (var p in players) {
           final int delta = game.results[p.id] ?? 0;
-          currentTotals[p.id] = currentTotals[p.id]! + delta;
+          runningTotals[p.id] = runningTotals[p.id]! + delta;
 
           String? deltaStr;
           Color? deltaCol;
 
-          if (isLastRow) {
+          if (showDelta) {
             if (delta > 0) {
               deltaStr = " (+$delta)";
               deltaCol = colorScheme.error;
@@ -92,7 +96,7 @@ class ScoreboardTable extends StatelessWidget {
 
           rowCells.add(
             ScoreboardCell(
-              text: "${currentTotals[p.id]}",
+              text: "${runningTotals[p.id]}",
               deltaText: deltaStr,
               deltaColor: deltaCol,
               onLongPress: () => onEditMinigame(game, globalIndex, caller),

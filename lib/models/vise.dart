@@ -13,7 +13,7 @@ class Vise extends Minigame {
   List<int> get allowedScores => [8, -1, -2, -3, -4, -5, -6, -7, -8];
 
   @override
-  bool validateResults(Map<String, int> currentResults) {
+  bool validateResults(Map<int, int> currentResults) {
     final sum = currentResults.values
         .where((val) => val < 0)
         .fold(0, (sum, val) => sum + val);
@@ -24,10 +24,24 @@ class Vise extends Minigame {
   String get validationErrorMessage => 'Zbroj negativnih bodova mora biti -8.';
 
   @override
-  Vise copyWith({String? callerId, Map<String, int>? results}) {
+  Vise copyWith({int? callerId, Map<int, int>? results}) {
     return Vise(
       callerId: callerId ?? this.callerId,
       results: results ?? Map.from(this.results),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': shortName,
+    'callerId': callerId,
+    'results': results.map((k, v) => MapEntry(k.toString(), v)),
+  };
+
+  factory Vise.fromJson(Map<String, dynamic> json) {
+    return Vise(
+      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
+      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
     );
   }
 }

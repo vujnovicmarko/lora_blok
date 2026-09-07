@@ -13,7 +13,7 @@ class Prog extends Minigame {
   List<int> get allowedScores => [-8, 8];
 
   @override
-  bool validateResults(Map<String, int> currentResults) {
+  bool validateResults(Map<int, int> currentResults) {
     return currentResults.values.contains(8);
   }
 
@@ -21,10 +21,24 @@ class Prog extends Minigame {
   String get validationErrorMessage => 'Barem jedna osoba mora imati 8 bodova.';
 
   @override
-  Prog copyWith({String? callerId, Map<String, int>? results}) {
+  Prog copyWith({int? callerId, Map<int, int>? results}) {
     return Prog(
       callerId: callerId ?? this.callerId,
       results: results ?? Map.from(this.results),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': shortName,
+    'callerId': callerId,
+    'results': results.map((k, v) => MapEntry(k.toString(), v)),
+  };
+
+  factory Prog.fromJson(Map<String, dynamic> json) {
+    return Prog(
+      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
+      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
     );
   }
 }

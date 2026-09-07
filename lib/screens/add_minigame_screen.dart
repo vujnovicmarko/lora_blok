@@ -32,8 +32,8 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
   Minigame? _selectedMinigame;
   var _isEditing = false;
 
-  final Map<String, int> _tempResults = {};
-  final Map<String, int> _tempWhistles = {};
+  final Map<int, int> _tempResults = {};
+  final Map<int, int> _tempWhistles = {};
 
   @override
   void initState() {
@@ -183,7 +183,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
 
               if (_selectedMinigame is Slag) {
                 final slagGame = _selectedMinigame as Slag;
-                Map<String, int> calculatedResults = {};
+                Map<int, int> calculatedResults = {};
                 for (var p in widget.players) {
                   calculatedResults[p.id] =
                       (_tempResults[p.id] ?? 0) + (_tempWhistles[p.id] ?? 0);
@@ -191,14 +191,14 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                 finalGame = Slag(
                   callerId: widget.caller.id,
                   playerIds: slagGame.playerIds,
-                  basePoints: Map<String, int>.from(_tempResults),
-                  whistles: Map<String, int>.from(_tempWhistles),
+                  basePoints: Map<int, int>.from(_tempResults),
+                  whistles: Map<int, int>.from(_tempWhistles),
                   results: calculatedResults,
                 );
               } else {
                 finalGame = _selectedMinigame!.copyWith(
                   callerId: widget.caller.id,
-                  results: Map<String, int>.from(_tempResults),
+                  results: Map<int, int>.from(_tempResults),
                 );
               }
 
@@ -210,6 +210,9 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                     content: Text(finalGame.validationErrorMessage),
                     backgroundColor: colorScheme.error,
                     behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 );
                 return;

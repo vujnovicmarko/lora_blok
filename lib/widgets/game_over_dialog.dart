@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/game_player.dart';
 import '../models/minigame.dart';
+import '../database/database_helper.dart';
+import '../database/game_cache.dart';
 
 class GameOverDialog extends StatelessWidget {
+  final String gameId;
   final List<GamePlayer> players;
   final List<Minigame> playedMinigames;
 
   const GameOverDialog({
     super.key,
+    required this.gameId,
     required this.players,
     required this.playedMinigames,
   });
@@ -27,7 +31,7 @@ class GameOverDialog extends StatelessWidget {
     final sortedPlayers = List<GamePlayer>.from(players);
     sortedPlayers.sort((a, b) => finalScores[a.id]!.compareTo(finalScores[b.id]!));
 
-    final playerRanks = <String, int>{};
+    final playerRanks = <int, int>{};
     int currentRank = 1;
     int? previousScore;
     
@@ -41,6 +45,12 @@ class GameOverDialog extends StatelessWidget {
       }
       playerRanks[p.id] = currentRank;
     }
+
+    final minScore = finalScores[sortedPlayers.first.id]!;
+    final winnerIds = sortedPlayers
+        .where((p) => finalScores[p.id] == minScore)
+        .map((p) => p.id)
+        .toList();
 
     return AlertDialog(
       title: const Center(
@@ -90,14 +100,41 @@ class GameOverDialog extends StatelessWidget {
           child: const Text("Tablica"),
         ),
         FilledButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
+          onPressed: () async {
+            // Save game to database
+            await _saveGameToDatabase(finalScores, winnerIds);
+
+            // Clear the cached game state
+            await GameCache.clearGameState(gameId);
+
+            if (context.mounted) {
+              Navigator.of(context).pop(true);
+            }
           },
           style: OutlinedButton.styleFrom(side: BorderSide(color: colorScheme.primary)),
           child: const Text("Početna"),
         ),
       ],
     );
+  }
+
+  Future<void> _saveGameToDatabase(
+    Map<int, int> finalScores,
+    List<int> winnerIds,
+  ) async {
+    try {
+      final playerMaps = players.map((p) => p.toJson()).toList();
+      final minigameMaps = playedMinigames.map((m) => m.toJson()).toList();
+
+      await DatabaseHelper.instance.saveCompletedGame(
+        players: playerMaps,
+        minigames: minigameMaps,
+        finalScores: finalScores,
+        winnerIds: winnerIds,
+      );
+    } catch (e) {
+      // Silently fail — don't block the user from returning home
+      debugPrint('Error saving game to database: $e');
+    }
   }
 }
