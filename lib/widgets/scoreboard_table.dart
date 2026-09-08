@@ -34,7 +34,11 @@ class ScoreboardTable extends StatelessWidget {
     final pageGames = <Minigame>[];
     final List<TableRow> rows = [];
 
-    for (var i = startIndex; i < startIndex + gamesPerPlayer && i < playedMinigames.length; i++) {
+    for (
+      var i = startIndex;
+      i < startIndex + gamesPerPlayer && i < playedMinigames.length;
+      i++
+    ) {
       pageGames.add(playedMinigames[i]);
     }
 
@@ -43,7 +47,9 @@ class ScoreboardTable extends StatelessWidget {
         decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh),
         children: [
           const ScoreboardCell(text: "", isBold: true),
-          ...players.map((p) => ScoreboardCell(text: p.name.toUpperCase(), isBold: true)),
+          ...players.map(
+            (p) => ScoreboardCell(text: p.name.toUpperCase(), isBold: true),
+          ),
         ],
       ),
     );
@@ -53,7 +59,13 @@ class ScoreboardTable extends StatelessWidget {
         decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh),
         children: [
           const ScoreboardCell(text: "START", isBold: true),
-          ...players.map((p) => ScoreboardCell(text: "${currentTotals[p.id]}", isBold: true, color: colorScheme.primary)),
+          ...players.map(
+            (p) => ScoreboardCell(
+              text: "${currentTotals[p.id]}",
+              isBold: true,
+              color: colorScheme.primary,
+            ),
+          ),
         ],
       ),
     );
@@ -64,7 +76,8 @@ class ScoreboardTable extends StatelessWidget {
       if (i < pageGames.length) {
         final game = pageGames[i];
         final globalIndex = startIndex + i;
-        final showDelta = !isReadOnly && (globalIndex == playedMinigames.length - 1);
+        final showDelta =
+            !isReadOnly && (globalIndex == playedMinigames.length - 1);
 
         List<Widget> rowCells = [
           ScoreboardCell(
@@ -108,7 +121,10 @@ class ScoreboardTable extends StatelessWidget {
       } else {
         rows.add(
           TableRow(
-            children: List.generate(totalColumns, (_) => const ScoreboardCell(text: "")),
+            children: List.generate(
+              totalColumns,
+              (_) => const ScoreboardCell(text: ""),
+            ),
           ),
         );
       }

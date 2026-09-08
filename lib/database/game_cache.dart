@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/game_player.dart';
 import '../models/minigame.dart';
 
-
 class GameCache {
   static const _activeGamesKey = 'active_games_list_v2';
 
@@ -16,7 +15,7 @@ class GameCache {
     required int currentPage,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     final state = {
       'id': id,
       'players': players.map((p) => p.toJson()).toList(),
@@ -27,7 +26,7 @@ class GameCache {
     };
 
     final rawList = prefs.getStringList(_activeGamesKey) ?? [];
-    
+
     int index = -1;
     for (int i = 0; i < rawList.length; i++) {
       try {
@@ -52,7 +51,7 @@ class GameCache {
   static Future<List<Map<String, dynamic>>> loadAllActiveGames() async {
     final prefs = await SharedPreferences.getInstance();
     final rawList = prefs.getStringList(_activeGamesKey) ?? [];
-    
+
     List<Map<String, dynamic>> games = [];
     for (var raw in rawList) {
       try {
@@ -60,8 +59,10 @@ class GameCache {
         games.add(json);
       } catch (_) {}
     }
-    
-    games.sort((a, b) => (b['savedAt'] as String).compareTo(a['savedAt'] as String));
+
+    games.sort(
+      (a, b) => (b['savedAt'] as String).compareTo(a['savedAt'] as String),
+    );
     return games;
   }
 
@@ -107,7 +108,7 @@ class GameCache {
   static Future<void> clearGameState(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final rawList = prefs.getStringList(_activeGamesKey) ?? [];
-    
+
     rawList.removeWhere((raw) {
       try {
         final json = jsonDecode(raw);
@@ -121,10 +122,13 @@ class GameCache {
   }
 
   /// Remove all cached active games containing the player with [playerId] or [playerName]
-  static Future<void> removeActiveGamesWithPlayer(int playerId, {String? playerName}) async {
+  static Future<void> removeActiveGamesWithPlayer(
+    int playerId, {
+    String? playerName,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final rawList = prefs.getStringList(_activeGamesKey) ?? [];
-    
+
     rawList.removeWhere((raw) {
       try {
         final json = jsonDecode(raw) as Map<String, dynamic>;

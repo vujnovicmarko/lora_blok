@@ -29,16 +29,18 @@ class GameOverDialog extends StatelessWidget {
     }
 
     final sortedPlayers = List<GamePlayer>.from(players);
-    sortedPlayers.sort((a, b) => finalScores[a.id]!.compareTo(finalScores[b.id]!));
+    sortedPlayers.sort(
+      (a, b) => finalScores[a.id]!.compareTo(finalScores[b.id]!),
+    );
 
     final playerRanks = <int, int>{};
     int currentRank = 1;
     int? previousScore;
-    
+
     for (int i = 0; i < sortedPlayers.length; i++) {
       final p = sortedPlayers[i];
       final score = finalScores[p.id]!;
-      
+
       if (score != previousScore) {
         currentRank = i + 1;
         previousScore = score;
@@ -54,7 +56,10 @@ class GameOverDialog extends StatelessWidget {
 
     return AlertDialog(
       title: const Center(
-        child: Text("Partija završena!", style: TextStyle(fontWeight: FontWeight.bold)),
+        child: Text(
+          "Partija završena!",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -74,14 +79,18 @@ class GameOverDialog extends StatelessWidget {
                     Text(
                       "$rank. ${p.name}",
                       style: textTheme.titleMedium?.copyWith(
-                        fontWeight: rank == 1 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: rank == 1
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                     Text(
                       "${finalScores[p.id]}",
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: rank == 1 ? colorScheme.primary : colorScheme.onSurface,
+                        color: rank == 1
+                            ? colorScheme.primary
+                            : colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -111,7 +120,9 @@ class GameOverDialog extends StatelessWidget {
               Navigator.of(context).pop(true);
             }
           },
-          style: OutlinedButton.styleFrom(side: BorderSide(color: colorScheme.primary)),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: colorScheme.primary),
+          ),
           child: const Text("Početna"),
         ),
       ],

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import '../models/minigame.dart';
 import '../models/game_player.dart';
 import '../models/slag.dart';
-import '../utils/app_sizes.dart';
 import '../widgets/player_names_row.dart';
 import '../widgets/score_selector_row.dart';
 import '../widgets/game_selector.dart';
@@ -90,7 +89,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
       appBar: AppBar(title: Text(_isEditing ? 'Uredi igru' : 'Nova igra')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: AppSizes.p24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: SizedBox(
             width: double.infinity,
             child: Column(
@@ -102,7 +101,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: AppSizes.p16),
+                const SizedBox(height: 16),
                 GameSelector(
                   allMinigames: widget.allMinigames,
                   playedByThisPlayer: widget.playedByThisPlayer,
@@ -110,7 +109,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                   initialMinigame: widget.initialMinigame,
                   onSelected: _onMinigameSelected,
                 ),
-                const SizedBox(height: AppSizes.p32),
+                const SizedBox(height: 32),
 
                 if (_selectedMinigame != null) ...[
                   Text(
@@ -120,9 +119,9 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                       color: colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: AppSizes.p16),
+                  const SizedBox(height: 16),
                   PlayerNamesRow(players: widget.players),
-                  const SizedBox(height: AppSizes.p8),
+                  const SizedBox(height: 8),
                   ScoreSelectorRow(
                     players: widget.players,
                     values: _tempResults,
@@ -135,7 +134,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                   ),
 
                   if (_selectedMinigame is Slag) ...[
-                    const SizedBox(height: AppSizes.p32),
+                    const SizedBox(height: 32),
                     Text(
                       'Fućkanje',
                       style: textTheme.titleLarge?.copyWith(
@@ -143,13 +142,14 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                         color: colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.p16),
+                    const SizedBox(height: 16),
                     PlayerNamesRow(players: widget.players),
-                    const SizedBox(height: AppSizes.p8),
+                    const SizedBox(height: 8),
                     ScoreSelectorRow(
                       players: widget.players,
                       values: _tempWhistles,
-                      allowedScores: null, // null indicates 0-12 range for whistles
+                      allowedScores:
+                          null, // null indicates 0-12 range for whistles
                       onChanged: (playerId, newValue) {
                         setState(() {
                           _tempWhistles[playerId] = newValue;
@@ -157,7 +157,7 @@ class _AddMinigameScreenState extends State<AddMinigameScreen> {
                       },
                     ),
                   ],
-                  const SizedBox(height: AppSizes.p32),
+                  const SizedBox(height: 32),
                 ],
               ],
             ),

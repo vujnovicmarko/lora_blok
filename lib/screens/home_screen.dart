@@ -15,7 +15,7 @@ import '../widgets/expandable_section_header.dart';
 import '../utils/date_formatter.dart';
 import '../database/game_cache.dart';
 import 'scoreboard_screen.dart';
-import 'player_list_screen.dart';
+
 import '../widgets/settings_modal.dart';
 
 class HomeScreen extends StatefulWidget {

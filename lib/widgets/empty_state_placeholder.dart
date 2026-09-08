@@ -25,11 +25,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: colorScheme.outline,
-            ),
+            Icon(icon, size: 64, color: colorScheme.outline),
             const SizedBox(height: 16),
             Text(
               title,
@@ -55,12 +51,16 @@ class EmptyStatePlaceholder extends StatelessWidget {
                     TextSpan(text: subtitle.split('+').skip(1).join('+')),
                   ],
                 ),
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.outline,
+                ),
               )
             else
               Text(
                 subtitle,
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.outline,
+                ),
               ),
           ],
         ),

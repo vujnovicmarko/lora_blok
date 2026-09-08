@@ -13,8 +13,7 @@ abstract class Minigame {
   final int? callerId;
   final Map<int, int> results;
 
-  Minigame({this.callerId, Map<int, int>? results})
-    : results = results ?? {};
+  Minigame({this.callerId, Map<int, int>? results}) : results = results ?? {};
 
   List<int> get allowedScores;
   bool validateResults(Map<int, int> currentResults);

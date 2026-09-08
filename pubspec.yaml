@@ -1,5 +1,5 @@
 name: lora_blok
-description: "A new Flutter project."
+description: "Aplikacija za bilježenje rezultata kartaške igre lora"
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -12,7 +12,6 @@ dependencies:
   sqflite: ^2.4.2
   shared_preferences: ^2.5.3
   path: ^1.9.1
-  sqflite_common_ffi: ^2.4.2+1
 
 dev_dependencies:
   flutter_test:
@@ -27,7 +26,6 @@ flutter:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true
   image_path: "assets/images/lora_blok_icon.png"
   adaptive_icon_background: "#98BB6C"
   adaptive_icon_foreground: "assets/images/lora_blok_icon.png"

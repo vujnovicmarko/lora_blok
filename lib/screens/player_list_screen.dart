@@ -118,7 +118,7 @@ class _PlayerListScreenState extends State<PlayerListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Popis igrača'),
+        title: const Text('Igrači'),
         actions: [
           IconButton(
             onPressed: () => showSettingsModal(
@@ -139,7 +139,7 @@ class _PlayerListScreenState extends State<PlayerListScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _players.isEmpty
-                ? ListView(
+            ? ListView(
                 padding: const EdgeInsets.all(16),
                 children: const [
                   EmptyStatePlaceholder(

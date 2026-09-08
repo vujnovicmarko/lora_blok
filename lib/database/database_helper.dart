@@ -27,7 +27,7 @@ class DatabaseHelper {
         num_wins INTEGER NOT NULL DEFAULT 0,
         num_games_played INTEGER NOT NULL DEFAULT 0,
         total_points INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       )
     ''');
 
@@ -36,7 +36,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         winner_id INTEGER,
         num_players INTEGER NOT NULL DEFAULT 4,
-        played_at TEXT NOT NULL DEFAULT (datetime('now')),
+        played_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
         is_finished INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (winner_id) REFERENCES players (id)
       )
@@ -98,7 +98,11 @@ class DatabaseHelper {
 
   Future<Map<String, dynamic>?> getPlayerByName(String name) async {
     final db = await database;
-    final results = await db.query('players', where: 'name = ?', whereArgs: [name]);
+    final results = await db.query(
+      'players',
+      where: 'name = ?',
+      whereArgs: [name],
+    );
     return results.isNotEmpty ? results.first : null;
   }
 
@@ -108,10 +112,7 @@ class DatabaseHelper {
     return await insertPlayer(name);
   }
 
-
-
   // ── Game CRUD ──
-
 
   Future<List<Map<String, dynamic>>> getAllGames() async {
     final db = await database;
@@ -125,20 +126,21 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getGamePlayers(int gameId) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT gp.*, p.name as player_name
       FROM game_players gp
       JOIN players p ON gp.player_id = p.id
       WHERE gp.game_id = ?
       ORDER BY gp.seat_position ASC
-    ''', [gameId]);
+    ''',
+      [gameId],
+    );
   }
 
   // ── Game Players ──
 
-
   // ── Game Minigames ──
-
 
   // ── Full game save (called when game finishes) ──
 
@@ -155,7 +157,11 @@ class DatabaseHelper {
       final Map<int, int> playerDbIds = {};
       for (var p in players) {
         final name = p['name'] as String;
-        final existing = await txn.query('players', where: 'name = ?', whereArgs: [name]);
+        final existing = await txn.query(
+          'players',
+          where: 'name = ?',
+          whereArgs: [name],
+        );
         int dbId;
         if (existing.isNotEmpty) {
           dbId = existing.first['id'] as int;
@@ -165,13 +171,16 @@ class DatabaseHelper {
         playerDbIds[p['id'] as int] = dbId;
       }
 
-      final winnerDbId = winnerIds.isNotEmpty ? playerDbIds[winnerIds.first]! : 0;
+      final winnerDbId = winnerIds.isNotEmpty
+          ? playerDbIds[winnerIds.first]!
+          : 0;
 
       // Create game
       final gameId = await txn.insert('games', {
         'num_players': players.length,
         'winner_id': winnerDbId,
         'is_finished': 1,
+        'played_at': DateTime.now().toIso8601String(),
       });
 
       // Insert game players with positions and final scores
@@ -192,7 +201,9 @@ class DatabaseHelper {
       for (int i = 0; i < minigames.length; i++) {
         final mg = minigames[i];
         final callerGameId = mg['callerId'] as int?;
-        final callerDbId = callerGameId != null ? playerDbIds[callerGameId]! : 0;
+        final callerDbId = callerGameId != null
+            ? playerDbIds[callerGameId]!
+            : 0;
 
         final mgId = await txn.insert('game_minigames', {
           'game_id': gameId,
@@ -221,38 +232,49 @@ class DatabaseHelper {
         final points = finalScores[playerId] ?? 0;
         final isWinner = winnerIds.contains(playerId);
 
-        await txn.rawUpdate('''
+        await txn.rawUpdate(
+          '''
           UPDATE players SET
             num_games_played = num_games_played + 1,
             total_points = total_points + ?,
             num_wins = num_wins + ?
           WHERE id = ?
-        ''', [points, isWinner ? 1 : 0, dbId]);
+        ''',
+          [points, isWinner ? 1 : 0, dbId],
+        );
       }
     });
   }
 
   Future<Map<String, dynamic>?> getFullGame(int gameId) async {
     final db = await database;
-    
-    final playersData = await db.rawQuery('''
+
+    final playersData = await db.rawQuery(
+      '''
       SELECT gp.player_id as dbId, gp.seat_position, p.name
       FROM game_players gp
       JOIN players p ON gp.player_id = p.id
       WHERE gp.game_id = ?
       ORDER BY gp.seat_position ASC
-    ''', [gameId]);
+    ''',
+      [gameId],
+    );
 
     if (playersData.isEmpty) return null;
 
-    final players = playersData.map((row) => {
-      'id': row['seat_position'] as int,
-      'name': row['name'],
-      'dbId': row['dbId'],
-    }).toList();
+    final players = playersData
+        .map(
+          (row) => {
+            'id': row['seat_position'] as int,
+            'name': row['name'],
+            'dbId': row['dbId'],
+          },
+        )
+        .toList();
 
     final dbIdToTempId = {
-      for (var row in playersData) row['dbId'] as int: row['seat_position'] as int
+      for (var row in playersData)
+        row['dbId'] as int: row['seat_position'] as int,
     };
 
     final minigamesData = await db.query(
@@ -267,7 +289,7 @@ class DatabaseHelper {
       final mgId = mg['id'] as int;
       final type = mg['minigame_type'] as String;
       final callerDbId = mg['caller_player_id'] as int;
-      
+
       final scoresData = await db.query(
         'game_minigame_scores',
         where: 'game_minigame_id = ?',
@@ -291,10 +313,7 @@ class DatabaseHelper {
       });
     }
 
-    return {
-      'players': players,
-      'minigames': minigames,
-    };
+    return {'players': players, 'minigames': minigames};
   }
 
   // ── Stats ──
@@ -312,10 +331,10 @@ class DatabaseHelper {
       final games = map['num_games_played'] as int? ?? 0;
       final wins = map['num_wins'] as int? ?? 0;
       final pts = map['total_points'] as int? ?? 0;
-      
+
       map['avg_points'] = games > 0 ? pts / games : 0.0;
       map['win_rate'] = games > 0 ? (wins / games) * 100 : 0.0;
-      
+
       return map;
     }).toList();
   }
@@ -323,8 +342,12 @@ class DatabaseHelper {
   Future<void> deleteGame(int gameId) async {
     final db = await database;
     await db.transaction((txn) async {
-      final gamePlayers = await txn.query('game_players', where: 'game_id = ?', whereArgs: [gameId]);
-      
+      final gamePlayers = await txn.query(
+        'game_players',
+        where: 'game_id = ?',
+        whereArgs: [gameId],
+      );
+
       int? minScore;
       for (var gp in gamePlayers) {
         final pts = gp['total_points'] as int? ?? 0;
@@ -336,13 +359,16 @@ class DatabaseHelper {
         final ptsInGame = gp['total_points'] as int? ?? 0;
         final wasWinner = ptsInGame == minScore;
 
-        await txn.rawUpdate('''
+        await txn.rawUpdate(
+          '''
           UPDATE players SET
             num_games_played = MAX(0, num_games_played - 1),
             total_points = total_points - ?,
             num_wins = MAX(0, num_wins - ?)
           WHERE id = ?
-        ''', [ptsInGame, wasWinner ? 1 : 0, pId]);
+        ''',
+          [ptsInGame, wasWinner ? 1 : 0, pId],
+        );
       }
 
       final minigames = await txn.query(
@@ -358,8 +384,16 @@ class DatabaseHelper {
           whereArgs: [mg['id']],
         );
       }
-      await txn.delete('game_minigames', where: 'game_id = ?', whereArgs: [gameId]);
-      await txn.delete('game_players', where: 'game_id = ?', whereArgs: [gameId]);
+      await txn.delete(
+        'game_minigames',
+        where: 'game_id = ?',
+        whereArgs: [gameId],
+      );
+      await txn.delete(
+        'game_players',
+        where: 'game_id = ?',
+        whereArgs: [gameId],
+      );
       await txn.delete('games', where: 'id = ?', whereArgs: [gameId]);
     });
   }
@@ -385,20 +419,26 @@ class DatabaseHelper {
     });
   }
 
-
   Future<void> deletePlayer(int playerId) async {
     final db = await database;
     await db.transaction((txn) async {
       // Find all games this player participated in
-      final gameRows = await txn.rawQuery('''
+      final gameRows = await txn.rawQuery(
+        '''
         SELECT DISTINCT game_id FROM game_players WHERE player_id = ?
-      ''', [playerId]);
+      ''',
+        [playerId],
+      );
 
       final gameIds = gameRows.map((r) => r['game_id'] as int).toList();
 
       // Delete each game fully (scores, minigames, game_players, game)
       for (final gameId in gameIds) {
-        final allGamePlayers = await txn.query('game_players', where: 'game_id = ?', whereArgs: [gameId]);
+        final allGamePlayers = await txn.query(
+          'game_players',
+          where: 'game_id = ?',
+          whereArgs: [gameId],
+        );
         int? minScore;
         for (var gp in allGamePlayers) {
           final pts = gp['total_points'] as int? ?? 0;
@@ -406,21 +446,27 @@ class DatabaseHelper {
         }
 
         // Decrement stats for other players in this game
-        final otherPlayers = await txn.rawQuery('''
+        final otherPlayers = await txn.rawQuery(
+          '''
           SELECT player_id, total_points FROM game_players WHERE game_id = ? AND player_id != ?
-        ''', [gameId, playerId]);
+        ''',
+          [gameId, playerId],
+        );
 
         for (var op in otherPlayers) {
           final otherPlayerId = op['player_id'] as int;
           final ptsInGame = op['total_points'] as int? ?? 0;
           final wasWinner = ptsInGame == minScore;
-          await txn.rawUpdate('''
+          await txn.rawUpdate(
+            '''
             UPDATE players SET
               num_games_played = MAX(0, num_games_played - 1),
               total_points = total_points - ?,
               num_wins = MAX(0, num_wins - ?)
             WHERE id = ?
-          ''', [ptsInGame, wasWinner ? 1 : 0, otherPlayerId]);
+          ''',
+            [ptsInGame, wasWinner ? 1 : 0, otherPlayerId],
+          );
         }
 
         final minigames = await txn.query(
@@ -436,8 +482,16 @@ class DatabaseHelper {
             whereArgs: [mg['id']],
           );
         }
-        await txn.delete('game_minigames', where: 'game_id = ?', whereArgs: [gameId]);
-        await txn.delete('game_players', where: 'game_id = ?', whereArgs: [gameId]);
+        await txn.delete(
+          'game_minigames',
+          where: 'game_id = ?',
+          whereArgs: [gameId],
+        );
+        await txn.delete(
+          'game_players',
+          where: 'game_id = ?',
+          whereArgs: [gameId],
+        );
         await txn.delete('games', where: 'id = ?', whereArgs: [gameId]);
       }
 

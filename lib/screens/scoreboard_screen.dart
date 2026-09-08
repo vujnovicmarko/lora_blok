@@ -60,7 +60,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   Future<void> _cacheGameState() async {
     if (widget.isReadOnly || _isFinished) return;
-    final allMinigameTypes = widget.allMinigames.map((m) => m.shortName).toList();
+    final allMinigameTypes = widget.allMinigames
+        .map((m) => m.shortName)
+        .toList();
     await GameCache.saveGameState(
       id: widget.gameId,
       players: widget.players,
@@ -117,7 +119,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   Future<void> _openAddMinigameScreen() async {
     if (widget.isReadOnly) return;
-    
+
     final gamesPerPlayer = widget.allMinigames.length;
     final totalRequired = widget.players.length * gamesPerPlayer;
 
@@ -150,7 +152,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         _playedMinigames.add(result);
 
         int targetPage = callerIndex;
-        if (_playedMinigames.length < totalRequired && _playedMinigames.length % gamesPerPlayer == 0) {
+        if (_playedMinigames.length < totalRequired &&
+            _playedMinigames.length % gamesPerPlayer == 0) {
           targetPage = _playedMinigames.length ~/ gamesPerPlayer;
         }
 

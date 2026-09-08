@@ -38,8 +38,12 @@ class Dame extends Minigame {
 
   factory Dame.fromJson(Map<String, dynamic> json) {
     return Dame(
-      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
-      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      callerId: json['callerId'] != null
+          ? int.parse(json['callerId'].toString())
+          : null,
+      results: (json['results'] as Map? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
     );
   }
 }

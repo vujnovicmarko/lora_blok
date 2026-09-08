@@ -24,7 +24,9 @@ class GameSelector extends StatelessWidget {
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: allMinigames.map((game) {
-        bool isAlreadyPlayed = playedByThisPlayer.any((p) => p.shortName == game.shortName);
+        bool isAlreadyPlayed = playedByThisPlayer.any(
+          (p) => p.shortName == game.shortName,
+        );
         bool isSelected = selectedMinigame?.shortName == game.shortName;
         bool isCurrentEditTarget = initialMinigame?.shortName == game.shortName;
         bool isDisabled = isAlreadyPlayed && !isCurrentEditTarget;
@@ -32,9 +34,11 @@ class GameSelector extends StatelessWidget {
         return ChoiceChip(
           label: Text(game.shortName),
           selected: isSelected,
-          onSelected: isDisabled ? null : (val) {
-            if (val) onSelected(game);
-          },
+          onSelected: isDisabled
+              ? null
+              : (val) {
+                  if (val) onSelected(game);
+                },
         );
       }).toList(),
     );

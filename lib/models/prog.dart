@@ -37,8 +37,12 @@ class Prog extends Minigame {
 
   factory Prog.fromJson(Map<String, dynamic> json) {
     return Prog(
-      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
-      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      callerId: json['callerId'] != null
+          ? int.parse(json['callerId'].toString())
+          : null,
+      results: (json['results'] as Map? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
     );
   }
 }

@@ -93,11 +93,21 @@ class Slag extends Minigame {
 
   factory Slag.fromJson(Map<String, dynamic> json) {
     return Slag(
-      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
-      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
-      playerIds: (json['playerIds'] as List<dynamic>? ?? []).map((e) => int.parse(e.toString())).toList(),
-      basePoints: (json['basePoints'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
-      whistles: (json['whistles'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      callerId: json['callerId'] != null
+          ? int.parse(json['callerId'].toString())
+          : null,
+      results: (json['results'] as Map? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
+      playerIds: (json['playerIds'] as List<dynamic>? ?? [])
+          .map((e) => int.parse(e.toString()))
+          .toList(),
+      basePoints: (json['basePoints'] as Map<String, dynamic>? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
+      whistles: (json['whistles'] as Map<String, dynamic>? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
     );
   }
 }

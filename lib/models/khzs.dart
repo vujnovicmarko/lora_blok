@@ -38,8 +38,12 @@ class Khzs extends Minigame {
 
   factory Khzs.fromJson(Map<String, dynamic> json) {
     return Khzs(
-      callerId: json['callerId'] != null ? int.parse(json['callerId'].toString()) : null,
-      results: (json['results'] as Map? ?? {}).map((k, v) => MapEntry(int.parse(k), v as int)),
+      callerId: json['callerId'] != null
+          ? int.parse(json['callerId'].toString())
+          : null,
+      results: (json['results'] as Map? ?? {}).map(
+        (k, v) => MapEntry(int.parse(k), v as int),
+      ),
     );
   }
 }

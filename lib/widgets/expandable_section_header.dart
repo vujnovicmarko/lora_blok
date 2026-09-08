@@ -15,19 +15,15 @@ class ExpandableSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12),
       title: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
       ),
-      trailing: Icon(
-        isExpanded ? Icons.expand_less : Icons.expand_more,
-      ),
+      trailing: Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
       onTap: onTap,
     );
   }
