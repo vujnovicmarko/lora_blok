@@ -60,6 +60,28 @@ Ovaj projekt je strukturiran za skalabilnost i čist kod:
 
 ## 📥 Preuzimanje i instalacija
 
+### Izravno preuzimanje (APK)
+
+Preuzmite najnoviju verziju aplikacije izravno za vaš Android uređaj:
+
+[![Download APK](https://img.shields.io/github/v/release/vujnovicmarko/lora_blok?label=Preuzmi%20APK&style=for-the-badge&color=2K8555)](https://github.com/vujnovicmarko/lora_blok/releases/latest)
+
+- 📱 **[Izravno preuzimanje APK datoteke](https://github.com/vujnovicmarko/lora_blok/releases/latest/download/app-release.apk)**
+
+### Provjera integriteta
+
+Kako biste bili sigurni da preuzeta datoteka nije oštećena, možete usporediti SHA-1 otisak vaše datoteke s objavljenom `.sha1` datotekom iz izdanja:
+
+```bash
+# macOS / Linux
+shasum -a 1 -c app-release.apk.sha1
+
+# Windows PowerShell
+(Get-FileHash app-release.apk -Algorithm SHA1).Hash
+```
+
+---
+
 ### Kompajliranje iz izvornog koda
 
 ```bash
